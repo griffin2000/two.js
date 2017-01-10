@@ -147,6 +147,10 @@
       this.width = params.width;
       this.height = params.height;
 	  
+	} else {
+
+      this.width = params.domElement.width;
+      this.height = params.domElement.height;
 	}
 	
     this.scene = this.renderer.scene;
