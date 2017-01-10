@@ -118,9 +118,9 @@
       this.renderer.setSize(params.width, params.height, this.ratio);
       this.width = params.width;
       this.height = params.height;
-
-    }
-
+	  
+	}
+	
     this.scene = this.renderer.scene;
 
     Two.Instances.push(this);
@@ -1618,7 +1618,9 @@
      * Update positions and calculations in one pass before rendering.
      */
     update: function() {
-
+	  if(this.renderer.applyState)
+		  this.renderer.applyState();
+	
       var animated = !!this._lastFrame;
       var now = getNow();
 

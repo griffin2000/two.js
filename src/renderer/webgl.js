@@ -935,28 +935,36 @@
       opacity: 1
     };
     this._flagMatrix = true;
+	if(options.gl)
+	{
+		gl = this.ctx = options.gl;
+		this.overdraw = options.overdraw || false;
 
-    // http://games.greggman.com/game/webgl-and-alpha/
-    // http://www.khronos.org/registry/webgl/specs/latest/#5.2
-    params = _.defaults(options || {}, {
-      antialias: false,
-      alpha: true,
-      premultipliedAlpha: true,
-      stencil: true,
-      preserveDrawingBuffer: true,
-      overdraw: false
-    });
+	}
+	else
+	{
+		// http://games.greggman.com/game/webgl-and-alpha/
+		// http://www.khronos.org/registry/webgl/specs/latest/#5.2
+		params = _.defaults(options || {}, {
+		  antialias: false,
+		  alpha: true,
+		  premultipliedAlpha: true,
+		  stencil: true,
+		  preserveDrawingBuffer: true,
+		  overdraw: false
+		});
 
-    this.overdraw = params.overdraw;
+		this.overdraw = params.overdraw;
 
-    gl = this.ctx = this.domElement.getContext('webgl', params) ||
-      this.domElement.getContext('experimental-webgl', params);
+		gl = this.ctx = this.domElement.getContext('webgl', params) ||
+		  this.domElement.getContext('experimental-webgl', params);
 
-    if (!this.ctx) {
-      throw new Two.Utils.Error(
-        'unable to create a webgl context. Try using another renderer.');
-    }
-
+		if (!this.ctx) {
+		  throw new Two.Utils.Error(
+			'unable to create a webgl context. Try using another renderer.');
+		}
+	}
+	
     // Compile Base Shaders to draw in pixel space.
     vs = webgl.shaders.create(
       gl, webgl.shaders.vertex, webgl.shaders.types.vertex);
@@ -1029,6 +1037,35 @@
 
     },
 
+    applyState: function() {
+		
+		
+		var gl = this.ctx;
+
+		gl.useProgram(this.program);
+		gl.disable(gl.CULL_FACE);
+		
+		// Create and bind the drawing buffer
+
+		// look up where the vertex data needs to go.
+		this.program.position = gl.getAttribLocation(this.program, 'a_position');
+		this.program.matrix = gl.getUniformLocation(this.program, 'u_matrix');
+		this.program.textureCoords = gl.getAttribLocation(this.program, 'a_textureCoords');
+
+		// Copied from Three.js WebGLRenderer
+		gl.disable(gl.DEPTH_TEST);
+
+		// Setup some initial statements of the gl context
+		gl.enable(gl.BLEND);
+
+		// https://code.google.com/p/chromium/issues/detail?id=316393
+		// gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, gl.TRUE);
+
+		gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
+		gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
+		
+	},
     render: function() {
 
       var gl = this.ctx;
